@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Hipotecaria UVA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e0dcd5;
+    --text: #1a1916;
+    --muted: #7a7870;
+    --accent: #1a3a5c;
+    --accent-light: #e6eef5;
+    --accent2: #c44a20;
+    --accent2-light: #faece7;
+    --green: #0f6e56;
+    --green-light: #e1f5ee;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; }
+
+  header { margin-bottom: 2rem; }
+  header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  header p { font-size: 14px; color: var(--muted); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .field input {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+
+  .toggle-group { display: flex; gap: 6px; }
+  .toggle-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .toggle-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  .calc-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .calc-btn:hover { opacity: 0.88; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .metric {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+  }
+  .metric .mlabel { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 5px; }
+  .metric .mval { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .metric .msub { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 12px; }
+  .tab {
+    padding: 7px 16px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    transition: all 0.12s;
+  }
+  .tab.active {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+  .tab:not(.active):hover { background: var(--surface2); color: var(--text); }
+
+  .table-wrap {
+    overflow-x: auto;
+    max-height: 360px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  table { width: 100%; font-size: 12.5px; border-collapse: collapse; }
+  th {
+    background: var(--surface2);
+    padding: 9px 12px;
+    text-align: right;
+    font-weight: 500;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  th:first-child { text-align: center; }
+  td {
+    padding: 7px 12px;
+    text-align: right;
+    border-top: 1px solid #f0ede8;
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  td:first-child { text-align: center; font-family: 'DM Sans', sans-serif; color: var(--muted); font-size: 12px; }
+  tr:hover td { background: var(--accent-light); }
+
+  .chart-wrap { height: 220px; position: relative; margin: 0.5rem 0; }
+
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  .hidden { display: none; }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-orange { background: var(--accent2-light); color: var(--accent2); }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .metrics .metric:last-child { grid-column: span 2; }
+    header h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Calculadora Hipotecaria UVA</h1>
+    <p>Simulador de crédito con flujo de fondos en UVA, ARS y USD</p>
+  </header>
+
+  <div class="card">
+    <p class="section-label">Inmueble y financiamiento</p>
+    <div class="grid-2">
+      <div class="field">
+        <label>Valor del inmueble (USD)</label>
+        <input type="number" id="valorInmueble" value="80000" min="10000" step="1000">
+      </div>
+      <div class="field">
+        <label>TNA (%)</label>
+        <input type="number" id="tna" value="5.5" min="0.1" max="100" step="0.1">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Anticipo (%)</label>
+        <input type="number" id="anticipo" value="20" min="0" max="90" step="1">
+      </div>
+      <div class="field">
+        <label>Gastos operativos (%)</label>
+        <input type="number" id="gastos" value="10" min="0" max="30" step="0.5">
+      </div>
+      <div class="field">
+        <label>Plazo (meses)</label>
+        <input type="number" id="plazo" value="360" min="12" max="360" step="12">
+      </div>
+    </div>
+
+    <hr class="divider">
+    <p class="section-label">Cotizaciones</p>
+    <div class="grid-2">
+      <div class="field">
+        <label>Valor UVA (ARS)</label>
+        <input type="number" id="valorUVA" value="959.57" min="1" step="0.01">
+      </div>
+      <div class="field">
+        <label>Tipo de cambio USD/ARS</label>
+        <input type="number" id="usdArs" value="1226.22" min="1" step="0.01">
+      </div>
+    </div>
+
+    <hr class="divider">
+    <p class="section-label">Condiciones del crédito</p>
+    <div class="grid-2">
+      <div>
+        <p style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:7px;">¿1° Vivienda? (IVA)</p>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn1vSi" onclick="setVivienda('SI')">Sí — exento IVA</button>
+          <button class="toggle-btn" id="btn1vNo" onclick="setVivienda('NO')">No — grava 21%</button>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:7px;">Ajuste CVS</p>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="btnCvsNo" onclick="setCVS('NO')">No aplica</button>
+          <button class="toggle-btn active" id="btnCvsSi" onclick="setCVS('SI')">Sí (+1.5% mensual)</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <button class="calc-btn" onclick="calcular()">Calcular crédito</button>
+  </div>
+
+  <div id="results" class="hidden">
+
+    <div class="card">
+      <p class="section-label">Resumen del crédito</p>
+      <div class="metrics" id="metricsGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('uva')">UVA</button>
+        <button class="tab" onclick="switchTab('ars')">ARS</button>
+        <button class="tab" onclick="switchTab('usd')">USD</button>
+        <button class="tab" onclick="switchTab('chart')">Gráfico</button>
+      </div>
+
+      <div id="tab-uva" class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Mes</th><th>Cuota capital</th><th>Cuota interés</th>
+            <th>IVA s/interés</th><th>Cuota servicio</th><th>Saldo deuda</th>
+          </tr></thead>
+          <tbody id="bodyUVA"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-ars" class="table-wrap hidden">
+        <table>
+          <thead><tr>
+            <th>Mes</th><th>Cuota capital</th><th>Cuota interés</th>
+            <th>IVA s/interés</th><th>Cuota servicio</th><th>Saldo deuda</th>
+          </tr></thead>
+          <tbody id="bodyARS"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-usd" class="table-wrap hidden">
+        <table>
+          <thead><tr>
+            <th>Mes</th><th>Cuota capital</th><th>Cuota interés</th>
+            <th>IVA s/interés</th><th>Cuota servicio</th><th>Saldo deuda</th>
+          </tr></thead>
+          <tbody id="bodyUSD"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-chart" class="hidden">
+        <div class="legend">
+          <span><span class="leg-dot" style="background:#1a3a5c;"></span>Capital (ARS)</span>
+          <span><span class="leg-dot" style="background:#c44a20;"></span>Interés (ARS)</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="myChart" role="img" aria-label="Composición de cuota mensual: capital vs interés en ARS"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Calculadora UVA · Los valores son estimativos y no constituyen una oferta crediticia oficial.
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  let primeraVivienda = 'SI';
+  let ajusteCVS = 'SI';
+  let chartInst = null;
+
+  function setVivienda(v) {
+    primeraVivienda = v;
+    document.getElementById('btn1vSi').classList.toggle('active', v === 'SI');
+    document.getElementById('btn1vNo').classList.toggle('active', v === 'NO');
+  }
+  function setCVS(v) {
+    ajusteCVS = v;
+    document.getElementById('btnCvsSi').classList.toggle('active', v === 'SI');
+    document.getElementById('btnCvsNo').classList.toggle('active', v === 'NO');
+  }
+
+  function fmt(n, dec = 2) {
+    return Number(n).toLocaleString('es-AR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+
+  function calcular() {
+    const valorInmueble = parseFloat(document.getElementById('valorInmueble').value);
+    const tnaInput = parseFloat(document.getElementById('tna').value) / 100;
+    const plazo = parseInt(document.getElementById('plazo').value);
+    const pctAnticipo = parseFloat(document.getElementById('anticipo').value) / 100;
+    const pctGastos = parseFloat(document.getElementById('gastos').value) / 100;
+    const valorUVA = parseFloat(document.getElementById('valorUVA').value);
+    const usdArs = parseFloat(document.getElementById('usdArs').value);
+
+    const CVS = 0.015;
+    const tem = ajusteCVS === 'SI'
+      ? (tnaInput / 12.1666667) + (CVS / 12.166667)
+      : tnaInput / 12.1666667;
+
+    const hipotecaUSD = valorInmueble * (1 - pctAnticipo);
+    const hipotecaARS = hipotecaUSD * usdArs;
+    const capitalUVA = Math.ceil(hipotecaARS / valorUVA);
+    const cuotaPuraUVA = capitalUVA / ((1 - Math.pow(1 + tem, -plazo)) / tem);
+
+    const rows = [];
+    let saldoUVA = capitalUVA;
+
+    for (let i = 1; i <= plazo; i++) {
+      const interesUVA = saldoUVA * tnaInput / 12.1666667;
+      const capitalUVAi = cuotaPuraUVA - interesUVA;
+      const ivaUVA = primeraVivienda === 'NO' ? interesUVA * 0.21 : 0;
+      const servUVA = cuotaPuraUVA + ivaUVA;
+      saldoUVA = Math.max(0, saldoUVA - capitalUVAi);
+
+      const toARS = x => x * valorUVA;
+      const toUSD = x => x * valorUVA / usdArs;
+
+      rows.push({
+        mes: i,
+        uva: { cap: capitalUVAi, int: interesUVA, iva: ivaUVA, serv: servUVA, saldo: saldoUVA },
+        ars: { cap: toARS(capitalUVAi), int: toARS(interesUVA), iva: toARS(ivaUVA), serv: toARS(servUVA), saldo: toARS(saldoUVA) },
+        usd: { cap: toUSD(capitalUVAi), int: toUSD(interesUVA), iva: toUSD(ivaUVA), serv: toUSD(servUVA), saldo: toUSD(saldoUVA) }
+      });
+    }
+
+    const anticipo = valorInmueble * pctAnticipo;
+    const gastos = valorInmueble * pctGastos;
+    const tea = (Math.pow(1 + tem, 12.1666666) - 1) * 100;
+
+    document.getElementById('metricsGrid').innerHTML = `
+      <div class="metric">
+        <div class="mlabel">Capital hipoteca</div>
+        <div class="mval">USD ${fmt(hipotecaUSD, 0)}</div>
+        <div class="msub">${fmt(capitalUVA, 0)} UVA · ARS ${fmt(hipotecaARS, 0)}</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">1° cuota estimada</div>
+        <div class="mval">ARS ${fmt(rows[0].ars.serv, 0)}</div>
+        <div class="msub">USD ${fmt(rows[0].usd.serv, 2)} · ${fmt(rows[0].uva.serv, 1)} UVA</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Anticipo + gastos</div>
+        <div class="mval">USD ${fmt(anticipo + gastos, 0)}</div>
+        <div class="msub">Anticipo ${fmt(anticipo, 0)} · Gastos ${fmt(gastos, 0)}</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">TEM efectiva</div>
+        <div class="mval">${(tem * 100).toFixed(4)}%</div>
+        <div class="msub">TEA ≈ ${tea.toFixed(2)}%</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Plazo</div>
+        <div class="mval">${plazo} meses</div>
+        <div class="msub">${(plazo / 12).toFixed(1)} años</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">IVA s/ intereses</div>
+        <div class="mval">${primeraVivienda === 'SI' ? 'Exento' : '21%'}
+          <span class="badge ${primeraVivienda === 'SI' ? 'badge-green' : 'badge-orange'}">${primeraVivienda === 'SI' ? '1° vivienda' : 'Grava IVA'}</span>
+        </div>
+        <div class="msub">CVS: ${ajusteCVS === 'SI' ? 'Sí (+1.5%/mes)' : 'No aplica'}</div>
+      </div>
+    `;
+
+    const fillTable = (bodyId, key, prefix) => {
+      const body = document.getElementById(bodyId);
+      body.innerHTML = '';
+      rows.forEach(r => {
+        const d = r[key];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.mes}</td>
+          <td>${prefix}${fmt(d.cap)}</td>
+          <td>${prefix}${fmt(d.int)}</td>
+          <td>${prefix}${fmt(d.iva)}</td>
+          <td>${prefix}${fmt(d.serv)}</td>
+          <td>${prefix}${fmt(d.saldo, 0)}</td>
+        `;
+        body.appendChild(tr);
+      });
+    };
+
+    fillTable('bodyUVA', 'uva', '');
+    fillTable('bodyARS', 'ars', '');
+    fillTable('bodyUSD', 'usd', 'U$D ');
+
+    const step = Math.max(1, Math.floor(plazo / 60));
+    const sampled = rows.filter((_, i) => i % step === 0);
+    if (chartInst) chartInst.destroy();
+    chartInst = new Chart(document.getElementById('myChart'), {
+      type: 'bar',
+      data: {
+        labels: sampled.map(r => 'M' + r.mes),
+        datasets: [
+          { label: 'Capital (ARS)', data: sampled.map(r => Math.round(r.ars.cap)), backgroundColor: '#1a3a5c', stack: 'a' },
+          { label: 'Interés (ARS)', data: sampled.map(r => Math.round(r.ars.int)), backgroundColor: '#c44a20', stack: 'a' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { stacked: true, ticks: { font: { size: 11 }, autoSkip: true, maxTicksLimit: 12 } },
+          y: { stacked: true, ticks: { font: { size: 11 }, callback: v => 'ARS ' + (v >= 1000 ? Math.round(v / 1000) + 'K' : v) } }
+        }
+      }
+    });
+
+    document.getElementById('results').classList.remove('hidden');
+    switchTab('uva');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function switchTab(name) {
+    ['uva', 'ars', 'usd', 'chart'].forEach((t, i) => {
+      document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+      document.querySelectorAll('.tab')[i].classList.toggle('active', t === name);
+    });
+  }
+</script>
+</body>
+</html>
