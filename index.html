@@ -420,7 +420,7 @@
     const cuotaPuraUVA = capitalUVA / ((1 - Math.pow(1 + tem, -plazo)) / tem);
 
     // Seguro de incendio mensual fijo sobre valor del inmueble
-    const segMensualUSD = (valorInmueble * pctSeguro) / 12;
+    const segMensualUSD = valorInmueble * pctSeguro;
     const segMensualARS = segMensualUSD * usdArs;
     const segMensualUVA = segMensualARS / valorUVA;
 
