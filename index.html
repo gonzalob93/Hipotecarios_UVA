@@ -223,7 +223,46 @@
     border-top: 1px solid var(--border);
   }
 
-  @media (max-width: 600px) {
+  @media print {
+    body { background: #fff; padding: 0; font-size: 11px; }
+    .page { max-width: 100%; }
+    header h1 { font-size: 18px; }
+    .card { border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 0.5rem; padding: 1rem; }
+    .calc-btn, #pdfBtn, .tabs { display: none !important; }
+    .table-wrap { max-height: none; overflow: visible; border: none; }
+    table { font-size: 10px; }
+    th, td { padding: 4px 7px; }
+    #tab-uva, #tab-ars, #tab-usd, #tab-chart { display: block !important; margin-bottom: 1rem; }
+    #tab-ars { page-break-before: always; }
+    #tab-usd { page-break-before: always; }
+    #tab-chart { page-break-before: always; }
+    .chart-wrap { height: 200px; }
+    .metrics { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .metric { padding: 8px; }
+    footer { display: none; }
+    .print-disclaimer {
+      display: block !important;
+      text-align: center;
+      font-size: 10px;
+      color: #555;
+      margin-top: 2rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #ccc;
+      font-style: italic;
+    }
+    .print-section-title {
+      display: block !important;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #555;
+      margin: 1rem 0 0.4rem;
+    }
+  }
+
+  .print-disclaimer { display: none; }
+  .print-section-title { display: none; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .metrics { grid-template-columns: 1fr 1fr; }
     header h1 { font-size: 21px; }
@@ -292,7 +331,7 @@
         <p style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:7px;">Ajuste CVS</p>
         <div class="toggle-group">
           <button class="toggle-btn active" id="btnCvsNo" onclick="setCVS('NO')">No aplica</button>
-          <button class="toggle-btn" id="btnCvsSi" onclick="setCVS('SI')">Sí (+1.5% mensual)</button>
+          <button class="toggle-btn" id="btnCvsSi" onclick="setCVS('SI')">Sí (+1.5% anual)</button>
         </div>
       </div>
     </div>
@@ -369,6 +408,14 @@
       </div>
     </div>
 
+  </div>
+
+  <div id="pdfBtn" class="hidden" style="text-align:center; margin: 1rem 0;">
+    <button class="calc-btn" style="max-width:320px;" onclick="descargarPDF()">⬇ Descargar análisis en PDF</button>
+  </div>
+
+  <div class="print-disclaimer">
+    Solo para fines informativos. No constituye una oferta crediticia formal.
   </div>
 
   <footer>
@@ -483,7 +530,7 @@
         <div class="mval">${primeraVivienda === 'SI' ? 'Exento' : '21%'}
           <span class="badge ${primeraVivienda === 'SI' ? 'badge-green' : 'badge-orange'}">${primeraVivienda === 'SI' ? '1° vivienda' : 'Grava IVA'}</span>
         </div>
-        <div class="msub">CVS: ${ajusteCVS === 'SI' ? 'Sí (+1.5%/mes)' : 'No aplica'}</div>
+        <div class="msub">CVS: ${ajusteCVS === 'SI' ? 'Sí (+1,5 p.p.a.)' : 'No aplica'}</div>
       </div>
       <div class="metric highlight">
         <div class="mlabel">Ingresos netos mínimos</div>
@@ -539,8 +586,19 @@
     });
 
     document.getElementById('results').classList.remove('hidden');
+    document.getElementById('pdfBtn').classList.remove('hidden');
     switchTab('uva');
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function descargarPDF() {
+    // Mostrar todas las tabs para que se impriman
+    ['uva', 'ars', 'usd', 'chart'].forEach(t => {
+      document.getElementById('tab-' + t).classList.remove('hidden');
+    });
+    window.print();
+    // Restaurar tab activa
+    setTimeout(() => switchTab('uva'), 500);
   }
 
   function switchTab(name) {
@@ -552,4 +610,3 @@
 </script>
 </body>
 </html>
-
